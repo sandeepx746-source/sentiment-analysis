@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Topic Battle Mode - SentimentIQ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+      <div class="brand-dot"></div>
+      🧠 Sentiment<span>IQ</span>
+    </a>
+    <div class="navbar-nav">
+      <span class="username-badge" id="usernameBadge">User</span>
+      <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section-label">Intelligence</div>
+      <a href="/dashboard" class="sidebar-link">
+        <span class="s-icon">📊</span> Dashboard
+      </a>
+      <a href="/compare" class="sidebar-link active">
+        <span class="s-icon">⚔️</span> Battle Mode
+      </a>
+      <div class="sidebar-section-label">Social Analytics</div>
+      <a href="/connect" class="sidebar-link">
+        <span class="s-icon">🔗</span> Connect Account
+      </a>
+      <a href="/social-dashboard" class="sidebar-link">
+        <span class="s-icon">📈</span> Social Dashboard
+      </a>
+      <div class="sidebar-section-label">Recent Analyzed</div>
+      <div id="recentSidebarList" class="flex flex-col gap-2" style="padding: 4px 12px;">
+        <!-- Filled dynamically -->
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Battle Input Hero -->
+      <section class="search-hero animate-in">
+        <h2>⚔️ Topic Battle Mode</h2>
+        <p>Compare two topics head-to-head to determine the sentiment winner, engagement leader, and dominant public mood.</p>
+        <div class="search-box" style="display: flex; gap: 12px; align-items: center;">
+          <input type="text" id="topicA" class="form-control" placeholder="Topic A (e.g. ChatGPT)" required>
+          <div class="vs-badge" style="box-shadow: none; animation: none; width: 44px; height: 44px; font-size: 1.1rem; flex-shrink: 0;">VS</div>
+          <input type="text" id="topicB" class="form-control" placeholder="Topic B (e.g. Gemini)" required>
+          <button class="btn btn-primary btn-lg" id="battleBtn" onclick="performBattle()">
+            <span>Fight!</span>
+            <div class="spinner spinner-sm hidden" id="battleSpinner"></div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Results Area -->
+      <div id="battleResultsArea" class="hidden">
+        <!-- Winner Banner -->
+        <div class="winner-banner" id="winnerBanner">
+          <div class="winner-trophy">🏆</div>
+          <div class="winner-title" id="winnerTitle">Topic A Wins Public Opinion</div>
+          <div class="winner-sub" id="winnerSub">Based on overall positive sentiment, virality, and engagement score.</div>
+        </div>
+
+        <!-- Comparative KPI Table -->
+        <div class="glass section-card mb-4 animate-in">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">📊</span> Battle Comparison Stats</div>
+          </div>
+          <div class="compare-grid">
+            <!-- Topic A Stats -->
+            <div class="flex flex-col gap-4" style="border-right: 1px solid var(--border); padding-right: 20px;">
+              <h3 id="labelTopicA" style="font-size: 1.4rem; color: var(--primary); text-align: center;">Topic A</h3>
+              
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Positive Sentiment</span>
+                  <span id="posValA">0%</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="posBarA" style="background: var(--success); width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Virality Score</span>
+                  <span id="virValA">0/100</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="virBarA" style="background: var(--warning); width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Engagement Rate</span>
+                  <span id="engValA">0%</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="engBarA" style="background: var(--info); width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Average Compound Score</span>
+                  <span id="compValA">0.00</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="compBarA" style="background: var(--secondary); width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Topic B Stats -->
+            <div class="flex flex-col gap-4" style="padding-left: 20px;">
+              <h3 id="labelTopicB" style="font-size: 1.4rem; color: #a5b4fc; text-align: center;">Topic B</h3>
+              
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Positive Sentiment</span>
+                  <span id="posValB">0%</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="posBarB" style="background: var(--success); width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Virality Score</span>
+                  <span id="virValB">0/100</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="virBarB" style="background: var(--warning); width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Engagement Rate</span>
+                  <span id="engValB">0%</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="engBarB" style="background: var(--info); width: 0%;"></div>
+                </div>
+              </div>
+
+              <div class="compare-bar-row">
+                <div class="compare-bar-label">
+                  <span>Average Compound Score</span>
+                  <span id="compValB">0.00</span>
+                </div>
+                <div class="compare-bar">
+                  <div class="compare-bar-fill" id="compBarB" style="background: var(--secondary); width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparative Chart -->
+        <div class="chart-row">
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📊</span> Sentiment Comparison</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="battleSentimentChart"></canvas>
+            </div>
+          </div>
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📈</span> Comparison Insights</div>
+            </div>
+            <div class="insights-grid" id="battleInsightsList" style="grid-template-columns: 1fr; gap: 8px;">
+              <!-- Inserted dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="battleEmptyState" class="glass section-card empty-state animate-in">
+        <div class="e-icon">⚔️</div>
+        <h3>No Battle Loaded</h3>
+        <p>Type two topics above to compare them side-by-side in real time.</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="battleLoadingState" class="glass section-card loading-overlay hidden">
+        <div class="spinner"></div>
+        <h3>Simulating Public Mood Battle...</h3>
+        <p>Analyzing datasets, matching emotion curves, and calculating victory margin.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/compare.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = checkAuth();
+      if (token) {
+        initCompare();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Audience Analytics - SentimentIQ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+      <div class="brand-dot"></div>
+      🧠 Sentiment<span>IQ</span>
+    </a>
+    <div class="navbar-nav">
+      <span class="username-badge" id="usernameBadge">User</span>
+      <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section-label">Intelligence</div>
+      <a href="/dashboard" class="sidebar-link">
+        <span class="s-icon">📊</span> Dashboard
+      </a>
+      <a href="/compare" class="sidebar-link">
+        <span class="s-icon">⚔️</span> Battle Mode
+      </a>
+      <div class="sidebar-section-label">Social Analytics</div>
+      <a href="/connect" class="sidebar-link">
+        <span class="s-icon">🔗</span> Connect Account
+      </a>
+      <a href="/social-dashboard" class="sidebar-link active">
+        <span class="s-icon">📈</span> Social Dashboard
+      </a>
+      <div class="sidebar-section-label">Recent Analyzed</div>
+      <div id="recentSidebarList" class="flex flex-col gap-2" style="padding: 4px 12px;">
+        <!-- Filled dynamically -->
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Tab selector for connected platforms -->
+      <div id="activeSocialTabs" class="flex gap-2 mb-4 flex-wrap">
+        <!-- Added dynamically: Instagram, Twitter, etc. chips -->
+      </div>
+
+      <!-- Main Analytics Dashboard Content Area -->
+      <div id="socialAnalyticsContent" class="hidden">
+        <div class="section-header mb-4">
+          <div>
+            <h1 id="activeAccountTitle" style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; display: flex; align-items: center; gap: 8px;">
+              <span id="activeAccountPlatformIcon">📸</span>
+              <span id="activeAccountHandle">@username</span>
+            </h1>
+            <p>AI-powered audience insight dashboard and sentiment reporting feed.</p>
+          </div>
+          <span class="badge badge-positive" id="activeAccountDominantMood">😊 Happy</span>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid mb-4">
+          <div class="glass kpi-card total animate-in" style="animation-delay: 0.1s;">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-value" id="kpiFollowers">--</div>
+            <div class="kpi-label" id="kpiFollowersLabel">Followers</div>
+          </div>
+          <div class="glass kpi-card positive animate-in" style="animation-delay: 0.2s;">
+            <div class="kpi-icon">❤️</div>
+            <div class="kpi-value" id="kpiLikes">--</div>
+            <div class="kpi-label">Total Likes</div>
+          </div>
+          <div class="glass kpi-card neutral animate-in" style="animation-delay: 0.3s;">
+            <div class="kpi-icon">👁️</div>
+            <div class="kpi-value" id="kpiViews">--</div>
+            <div class="kpi-label">Views</div>
+          </div>
+          <div class="glass kpi-card total animate-in" style="animation-delay: 0.4s;">
+            <div class="kpi-icon">💬</div>
+            <div class="kpi-value" id="kpiComments">--</div>
+            <div class="kpi-label">Comments</div>
+          </div>
+          <div class="glass kpi-card engagement animate-in" style="animation-delay: 0.5s;">
+            <div class="kpi-icon">⚡</div>
+            <div class="kpi-value" id="kpiSocialEngagement">--%</div>
+            <div class="kpi-label">Engagement</div>
+          </div>
+          <div class="glass kpi-card virality animate-in" style="animation-delay: 0.6s;">
+            <div class="kpi-icon">🔥</div>
+            <div class="kpi-value" id="kpiSocialVirality">--</div>
+            <div class="kpi-label">Virality Score</div>
+          </div>
+        </div>
+
+        <!-- First Row: Mood Meter & Word Cloud -->
+        <div class="chart-row">
+          <!-- Mood Meter -->
+          <div class="glass section-card flex flex-col items-center">
+            <div class="section-header w-full">
+              <div class="section-title"><span class="icon">😊</span> Audience Mood Meter™</div>
+            </div>
+            <div class="mood-meter">
+              <div class="mood-ring">
+                <svg width="160" height="160" viewBox="0 0 160 160">
+                  <circle class="mood-ring-track" cx="80" cy="80" r="70"></circle>
+                  <circle class="mood-ring-fill" id="socialMoodRingFill" cx="80" cy="80" r="70" stroke-dasharray="440" stroke-dashoffset="440" stroke="var(--primary)"></circle>
+                </svg>
+                <div class="mood-center">
+                  <div class="mood-emoji" id="socialMoodMeterEmoji">😐</div>
+                  <div class="mood-pct" id="socialMoodMeterPct">0%</div>
+                  <div class="mood-label" id="socialMoodMeterLabel">Neutral</div>
+                </div>
+              </div>
+              <div class="mood-emotions" id="socialMoodEmotionsList">
+                <!-- Mini emotion pills dynamically added -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Audience Insights Cards -->
+          <div class="glass section-card flex flex-col">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">💡</span> AI Audience Insights</div>
+            </div>
+            <div class="insights-grid" id="socialInsightsList" style="grid-template-columns: 1fr; gap: 8px;">
+              <!-- Dynamic insights -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="chart-row">
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📊</span> Sentiment Distribution</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="socialSentimentPieChart"></canvas>
+            </div>
+          </div>
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📈</span> Likes Growth & Activity</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="socialActivityChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">⚡</span> Engagement Trend</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="socialEngagementChart"></canvas>
+            </div>
+          </div>
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📅</span> Audience Mood Timeline</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="socialMoodTimelineChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audience Word Cloud -->
+        <div class="glass section-card mb-4">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">☁️</span> Audience Keyword Cloud</div>
+          </div>
+          <div class="word-cloud" id="socialWordCloud">
+            <!-- Words -->
+          </div>
+        </div>
+
+        <!-- Live Comments Intelligent Table -->
+        <div class="glass section-card mb-4">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">💬</span> Comments Intelligence Feed</div>
+          </div>
+          <div class="filter-bar">
+            <input type="text" id="socialCommentSearch" class="form-control" placeholder="Search comments..." oninput="filterSocialComments()">
+            <button class="filter-chip active" id="socialChipAll" onclick="setSocialCommentFilter('')">All Comments</button>
+            <button class="filter-chip" id="socialChipPositive" onclick="setSocialCommentFilter('positive')">Positive</button>
+            <button class="filter-chip" id="socialChipNegative" onclick="setSocialCommentFilter('negative')">Negative</button>
+            <button class="filter-chip" id="socialChipNeutral" onclick="setSocialCommentFilter('neutral')">Neutral</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="comments-table">
+              <thead>
+                <tr>
+                  <th>Comment</th>
+                  <th>Mood Label</th>
+                  <th style="text-align: right;">Polarity Score</th>
+                </tr>
+              </thead>
+              <tbody id="socialCommentsTableBody">
+                <!-- Comments -->
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="socialCommentsPagination">
+            <!-- Pagination buttons -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="socialAnalyticsEmptyState" class="glass section-card empty-state animate-in hidden">
+        <div class="e-icon">🔗</div>
+        <h3>No Connected Accounts</h3>
+        <p>To analyze audience demographics, engagement, and post sentiments, please link a platform account.</p>
+        <button class="btn btn-primary mt-4" onclick="window.location.href='/connect'">Connect Account Now</button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="socialAnalyticsLoadingState" class="glass section-card loading-overlay">
+        <div class="spinner"></div>
+        <h3>Retrieving Social Accounts Data...</h3>
+        <p>Fetching channel metrics, syncing comments, and running sentiment updates.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/social.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = checkAuth();
+      if (token) {
+        initSocialDashboardPage();
+      }
+    });
+  </script>
+</body>
+</html>

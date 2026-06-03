@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - SentimentIQ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+      <div class="brand-dot"></div>
+      🧠 Sentiment<span>IQ</span>
+    </a>
+    <div class="navbar-nav">
+      <span class="username-badge" id="usernameBadge">User</span>
+      <button class="btn btn-outline" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Dashboard Container -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section-label">Intelligence</div>
+      <a href="/dashboard" class="sidebar-link active">
+        <span class="s-icon">📊</span> Dashboard
+      </a>
+      <a href="/compare" class="sidebar-link">
+        <span class="s-icon">⚔️</span> Battle Mode
+      </a>
+      <div class="sidebar-section-label">Social Analytics</div>
+      <a href="/connect" class="sidebar-link">
+        <span class="s-icon">🔗</span> Connect Account
+      </a>
+      <a href="/social-dashboard" class="sidebar-link">
+        <span class="s-icon">📈</span> Social Dashboard
+      </a>
+      <div class="sidebar-section-label">Recent Analyzed</div>
+      <div id="recentSidebarList" class="flex flex-col gap-2" style="padding: 4px 12px;">
+        <!-- Filled dynamically -->
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Search & Analyze Hero -->
+      <section class="search-hero animate-in">
+        <h2>Explore the Internet's Mood</h2>
+        <p>Analyze public sentiment, emotional trends, virality and keywords on any topic instantly.</p>
+        <div class="search-box">
+          <input type="text" id="topicSearchInput" class="form-control" placeholder="Search a topic (e.g. ChatGPT, iPhone 16, CSK)...">
+          <button class="btn btn-primary btn-lg" id="analyzeBtn" onclick="performAnalysis()">
+            <span>Analyze</span>
+            <div class="spinner spinner-sm hidden" id="analyzeSpinner"></div>
+          </button>
+        </div>
+        <div class="trending-pills" id="trendingPills">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- Analysis Results Area -->
+      <div id="resultsArea" class="hidden">
+        <!-- Topic Title Header -->
+        <div class="section-header mt-4 mb-4">
+          <h2 id="analyzedTopicTitle" style="font-family: 'Outfit', sans-serif; font-size: 1.8rem;">Topic Analysis</h2>
+          <span class="badge badge-positive" id="dominantMoodBadge">😊 Positive</span>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid mb-4">
+          <!-- Positive % -->
+          <div class="glass kpi-card positive animate-in" style="animation-delay: 0.1s;">
+            <div class="kpi-icon">😊</div>
+            <div class="kpi-value" id="kpiPositive">--%</div>
+            <div class="kpi-label">Positive</div>
+          </div>
+          <!-- Negative % -->
+          <div class="glass kpi-card negative animate-in" style="animation-delay: 0.2s;">
+            <div class="kpi-icon">😡</div>
+            <div class="kpi-value" id="kpiNegative">--%</div>
+            <div class="kpi-label">Negative</div>
+          </div>
+          <!-- Neutral % -->
+          <div class="glass kpi-card neutral animate-in" style="animation-delay: 0.3s;">
+            <div class="kpi-icon">😐</div>
+            <div class="kpi-value" id="kpiNeutral">--%</div>
+            <div class="kpi-label">Neutral</div>
+          </div>
+          <!-- Virality Score -->
+          <div class="glass kpi-card virality animate-in" style="animation-delay: 0.4s;">
+            <div class="kpi-icon">🔥</div>
+            <div class="kpi-value" id="kpiVirality">--</div>
+            <div class="kpi-label">Virality Score</div>
+          </div>
+          <!-- Engagement Rate -->
+          <div class="glass kpi-card engagement animate-in" style="animation-delay: 0.5s;">
+            <div class="kpi-icon">⚡</div>
+            <div class="kpi-value" id="kpiEngagement">--%</div>
+            <div class="kpi-label">Engagement</div>
+          </div>
+          <!-- Total Comments -->
+          <div class="glass kpi-card total animate-in" style="animation-delay: 0.6s;">
+            <div class="kpi-icon">💬</div>
+            <div class="kpi-value" id="kpiTotal">--</div>
+            <div class="kpi-label">Total Posts</div>
+          </div>
+        </div>
+
+        <!-- First Row: Mood Meter & Virality Score -->
+        <div class="chart-row">
+          <!-- Mood Meter -->
+          <div class="glass section-card flex flex-col items-center">
+            <div class="section-header w-full">
+              <div class="section-title"><span class="icon">😊</span> Internet Mood Meter™</div>
+            </div>
+            <div class="mood-meter">
+              <div class="mood-ring">
+                <svg width="160" height="160" viewBox="0 0 160 160">
+                  <circle class="mood-ring-track" cx="80" cy="80" r="70"></circle>
+                  <circle class="mood-ring-fill" id="moodRingFill" cx="80" cy="80" r="70" stroke-dasharray="440" stroke-dashoffset="440" stroke="var(--primary)"></circle>
+                </svg>
+                <div class="mood-center">
+                  <div class="mood-emoji" id="moodMeterEmoji">😐</div>
+                  <div class="mood-pct" id="moodMeterPct">0%</div>
+                  <div class="mood-label" id="moodMeterLabel">Neutral</div>
+                </div>
+              </div>
+              <div class="mood-emotions" id="moodEmotionsList">
+                <!-- Mini emotion pills dynamically added -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Virality Score Section -->
+          <div class="glass section-card flex flex-col items-center justify-between">
+            <div class="section-header w-full">
+              <div class="section-title"><span class="icon">🔥</span> Virality Score™</div>
+            </div>
+            <div class="virality-badge w-full">
+              <div class="virality-score-ring">
+                <div class="v-score-value">
+                  <span id="viralityNumber">--</span>
+                  <span class="v-label">/100</span>
+                </div>
+              </div>
+              <div class="virality-title" id="viralityStatement">Moderate Virality Trend</div>
+              <div class="virality-bar">
+                <div class="virality-bar-fill" id="viralityBarFill" style="width: 0%;"></div>
+              </div>
+              <div class="virality-trend" id="viralityTrendDesc">Trending slightly above normal community activity.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row: Sentiment Pie & Timeline Chart -->
+        <div class="chart-row">
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📊</span> Sentiment Breakdown</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="sentimentPieChart"></canvas>
+            </div>
+          </div>
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title"><span class="icon">📈</span> Public Mood Timeline</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="timelineLineChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Insights Cards -->
+        <div class="glass section-card mb-4 animate-in">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">💡</span> AI-Generated Opinion Insights</div>
+          </div>
+          <div class="insights-grid" id="insightsGrid">
+            <!-- Dynamic insight cards -->
+          </div>
+        </div>
+
+        <!-- Word Cloud -->
+        <div class="glass section-card mb-4">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">☁️</span> Viral Keyword Cloud</div>
+          </div>
+          <div class="word-cloud" id="wordCloud">
+            <!-- Dynamic words -->
+          </div>
+        </div>
+
+        <!-- Live Comments Intelligence Table -->
+        <div class="glass section-card mb-4">
+          <div class="section-header">
+            <div class="section-title"><span class="icon">💬</span> Live Opinion Feed</div>
+          </div>
+          <div class="filter-bar">
+            <input type="text" id="commentSearch" class="form-control" placeholder="Search comments..." oninput="filterComments()">
+            <button class="filter-chip active" id="chipAll" onclick="setCommentFilter('')">All Comments</button>
+            <button class="filter-chip" id="chipPositive" onclick="setCommentFilter('positive')">Positive</button>
+            <button class="filter-chip" id="chipNegative" onclick="setCommentFilter('negative')">Negative</button>
+            <button class="filter-chip" id="chipNeutral" onclick="setCommentFilter('neutral')">Neutral</button>
+          </div>
+          <div class="table-wrapper">
+            <table class="comments-table">
+              <thead>
+                <tr>
+                  <th>Comment</th>
+                  <th>Mood Label</th>
+                  <th style="text-align: right;">Polarity Score</th>
+                </tr>
+              </thead>
+              <tbody id="commentsTableBody">
+                <!-- Dynamically filled -->
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="commentsPagination">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Initial Empty State -->
+      <div id="dashboardEmptyState" class="glass section-card empty-state animate-in">
+        <div class="e-icon">🔍</div>
+        <h3>No Topic Loaded</h3>
+        <p>Type a topic above or select one of the trending topics to check the current public mood.</p>
+      </div>
+
+      <!-- Loading State (Overlay Skeleton) -->
+      <div id="dashboardLoadingState" class="glass section-card loading-overlay hidden">
+        <div class="spinner"></div>
+        <h3>Gathering Public Opinions...</h3>
+        <p>Crawling social platforms, analyzing sentiments, and generating AI insights.</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Validate authentication
+      const token = checkAuth();
+      if (token) {
+        initDashboard();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentimentIQ | AI Social Media Intelligence</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="animations.css">
+
+    <!-- Chart.js and GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+    <!-- Animated Particles Background -->
+    <div id="particles-js" class="background-animation"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar glass-panel">
+            <div class="logo">
+                <i class="fa-solid fa-brain neon-text-blue"></i>
+                <h2>Sentiment<span class="neon-text-purple">IQ</span></h2>
+            </div>
+            <ul class="nav-links">
+                <li class="active"><a href="#"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#"><i class="fa-solid fa-upload"></i> Bulk Upload</a></li>
+                <li><a href="#"><i class="fa-solid fa-hashtag"></i> Trend Tracker</a></li>
+                <li><a href="#"><i class="fa-solid fa-shield-halved"></i> Review Guard</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header section: Search / Real-time analyze -->
+            <header class="top-bar">
+                <div class="search-box glass-panel neon-border">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="live-analyze-input" placeholder="Type a comment or keyword for real-time analysis...">
+                </div>
+                <div class="user-profile">
+                    <div class="avatar glow-avatar"></div>
+                </div>
+            </header>
+
+            <!-- Real-time Analysis Result Banner -->
+            <div id="realtime-banner" class="realtime-banner glass-panel hidden">
+                <div class="banner-content">
+                    <h3 id="banner-text">Analyzing...</h3>
+                    <div class="banner-stats">
+                        <span id="banner-label" class="badge">--</span>
+                        <span id="banner-score">Score: --</span>
+                    </div>
+                </div>
+                <div class="spam-warning hidden" id="banner-spam">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Fake Review Detected
+                </div>
+            </div>
+
+            <!-- Dashboard Stats Overview -->
+            <section class="stats-grid">
+                <div class="stat-card glass-panel hover-glow">
+                    <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+                    <div class="stat-info">
+                        <h4>Total Analyzed</h4>
+                        <h2 id="total-posts">0</h2>
+                    </div>
+                </div>
+                <div class="stat-card glass-panel hover-glow positive-glow">
+                    <div class="stat-icon"><i class="fa-solid fa-face-smile"></i></div>
+                    <div class="stat-info">
+                        <h4>Positive</h4>
+                        <h2 id="stat-positive">0%</h2>
+                    </div>
+                </div>
+                <div class="stat-card glass-panel hover-glow negative-glow">
+                    <div class="stat-icon"><i class="fa-solid fa-face-angry"></i></div>
+                    <div class="stat-info">
+                        <h4>Negative</h4>
+                        <h2 id="stat-negative">0%</h2>
+                    </div>
+                </div>
+                <div class="stat-card glass-panel hover-glow">
+                    <div class="stat-icon"><i class="fa-solid fa-fire"></i></div>
+                    <div class="stat-info">
+                        <h4>Top Trend</h4>
+                        <h2 id="stat-trend">#AI</h2>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Charts Area -->
+            <section class="charts-area">
+                <div class="chart-container glass-panel neon-border">
+                    <h3>Sentiment Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="sentimentPieChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container glass-panel neon-border flex-2">
+                    <h3>7-Day Trend Analysis</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="trendLineChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Widgets -->
+            <section class="widgets-area">
+                <!-- CSV Upload -->
+                <div class="widget glass-panel hover-glow">
+                    <h3><i class="fa-solid fa-cloud-arrow-up"></i> Bulk Analysis</h3>
+                    <div class="upload-area" id="drop-zone">
+                        <i class="fa-solid fa-file-csv fa-3x"></i>
+                        <p>Drag & Drop CSV file here or</p>
+                        <input type="file" id="csv-upload" accept=".csv" hidden>
+                        <button class="btn-neon" onclick="document.getElementById('csv-upload').click()">Browse Files</button>
+                    </div>
+                    <div id="upload-status"></div>
+                </div>
+
+                <!-- Live Social Feed -->
+                <div class="widget glass-panel hover-glow flex-2">
+                    <div class="widget-header">
+                        <h3><i class="fa-solid fa-satellite-dish"></i> Live Social Feed</h3>
+                        <div class="platform-selector">
+                            <button class="active" data-platform="Twitter">X</button>
+                            <button data-platform="YouTube">YT</button>
+                            <button data-platform="Reddit">R</button>
+                        </div>
+                    </div>
+                    <div class="feed-container" id="live-feed">
+                        <!-- Feed items injected via JS -->
+                        <div class="feed-placeholder">Loading social data...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Floating AI Chatbot -->
+    <div id="ai-chatbot" class="chatbot-container glass-panel">
+        <div class="chat-header">
+            <i class="fa-solid fa-robot"></i> AI Assistant
+            <button id="close-chat" class="icon-btn"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="chat-body" id="chat-messages">
+            <div class="message ai">
+                <div class="msg-content">Hello! I am your AI analyst. How can I help you interpret the dashboard today?</div>
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask AI...">
+            <button id="send-chat" class="btn-neon"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Floating Toggle Button for Chatbot -->
+    <button id="toggle-chat" class="floating-btn pulse-glow">
+        <i class="fa-solid fa-comment-dots"></i>
+    </button>
+
+    <!-- Custom Scripts -->
+    <script src="script.js"></script>
+    <script src="charts.js"></script>
+    <script src="chatbot.js"></script>
+</body>
+</html>
