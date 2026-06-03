@@ -5,9 +5,18 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database.db'
 
 
 def get_db():
-    """Get a database connection."""
-    conn = sqlite3.connect(DB_PATH)
+    """Get a database connection with SQLite lock fixes."""
+    conn = sqlite3.connect(
+        DB_PATH,
+        timeout=30,
+        check_same_thread=False
+    )
     conn.row_factory = sqlite3.Row
+
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout=30000;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+
     return conn
 
 
@@ -16,7 +25,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +35,6 @@ def init_db():
         )
     ''')
 
-    # Comments table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS comments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +50,6 @@ def init_db():
         )
     ''')
 
-    # Sentiment analysis table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sentiment_analysis (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,7 +65,6 @@ def init_db():
         )
     ''')
 
-    # Topic history table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS topic_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,7 +75,6 @@ def init_db():
         )
     ''')
 
-    # AI insights table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ai_insights (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,7 +85,6 @@ def init_db():
         )
     ''')
 
-    # Engagement metrics table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS engagement_metrics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,7 +98,6 @@ def init_db():
         )
     ''')
 
-    # Social Accounts table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS social_accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,7 +110,6 @@ def init_db():
         )
     ''')
 
-    # Social Metrics table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS social_metrics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,7 +126,6 @@ def init_db():
         )
     ''')
 
-    # Audience Insights table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS audience_insights (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -137,7 +137,6 @@ def init_db():
         )
     ''')
 
-    # Comment Analysis table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS comment_analysis (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
