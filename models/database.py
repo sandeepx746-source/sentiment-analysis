@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'database.db')
+DB_PATH = os.environ.get("DATABASE_PATH", "/tmp/database.db")
 
 
 def get_db():
@@ -11,10 +11,11 @@ def get_db():
         timeout=30,
         check_same_thread=False
     )
+
     conn.row_factory = sqlite3.Row
 
-    conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA busy_timeout=30000;")
+    conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA synchronous=NORMAL;")
 
     return conn
@@ -151,4 +152,5 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("✅ Database initialized successfully.")
+
+    print(f"✅ Database initialized successfully at {DB_PATH}")
